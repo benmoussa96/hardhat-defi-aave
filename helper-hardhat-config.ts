@@ -1,14 +1,14 @@
-export interface networkConfigItem {
+export interface NetworkConfigItem {
   name?: string;
   blockConfirmations?: number;
   lockName?: string;
 }
 
-export interface networkConfigInfo {
-  [key: string]: networkConfigItem;
+export interface NetworkConfigInfo {
+  [key: string]: NetworkConfigItem;
 }
 
-export const networkConfig: networkConfigInfo = {
+export const networkConfig: NetworkConfigInfo = {
   1: {
     name: "mainnet",
     blockConfirmations: 6,
