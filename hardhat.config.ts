@@ -11,7 +11,7 @@ import "./tasks/accounts";
 import "./tasks/block-number";
 
 // Enviorment Variables
-const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "";
+const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
 const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL;
 const PIVATE_KEY = process.env.PIVATE_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
@@ -36,7 +36,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 31337,
       forking: {
-        url: MAINNET_RPC_URL,
+        url: MAINNET_RPC_URL || "",
       },
     },
     localhost: {
