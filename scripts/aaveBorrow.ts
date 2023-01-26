@@ -116,7 +116,7 @@ const approveErc20 = async (
   const approveTxn = await erc20.approve(spenderAddress, amountToSpend);
   await approveTxn.wait(1);
 
-  console.log(`==> Lending Pool approved to spend ${amountToSpend} WETH`);
+  console.log(`==> Lending Pool approved to spend ${amountToSpend}`);
 };
 
 /**
