@@ -34,6 +34,11 @@ const aaveBorrow = async () => {
     daiEthPriceFeedAddress,
     deployer
   );
+
+  // Borrowing the funds calculated
+  const daiAddress = networkConfig[chainId]["daiAddress"] || "";
+  await borrow(lendingPool, daiAddress, daiAmountToBorrowInWei, deployer);
+  await getBorrowUsedData(lendingPool, deployer);
 };
 
 /**
@@ -162,6 +167,25 @@ const getDaiPrice = async (daiEthPriceFeedAddress: string, account: string) => {
   console.log(`[DAI/ETH Price: ${price}]`);
 
   return price;
+};
+
+const borrow = async (
+  lendingPool: Contract,
+  daiAddress: string,
+  daiAmountToBorrow: BigNumber,
+  account: string
+) => {
+  console.log("...Borrowing funds...");
+  const borrowTxn = await lendingPool.borrow(
+    daiAddress,
+    daiAmountToBorrow,
+    2,
+    0,
+    account
+  );
+  await borrowTxn.wait(1);
+
+  console.log(`==> ${daiAmountToBorrow} DAI borrowed by account ${account}`);
 };
 
 aaveBorrow()
