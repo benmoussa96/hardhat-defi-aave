@@ -1,6 +1,5 @@
 import { BigNumber, Contract } from "ethers";
 import { ethers, network, getNamedAccounts } from "hardhat";
-// import { getWeth } from "./getWeth";
 import { networkConfig } from "../helper-hardhat-config";
 
 // Amount of ETH to supply
