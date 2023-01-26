@@ -30,6 +30,7 @@
     "deploy:goerli": "yarn hardhat deploy --network goerli",
     "test": "yarn hardhat test",
     "test:staging": "yarn hardhat test --network goerli",
+    "borrow": "yarn hardhat run scripts/aaveBorrow.ts",
     "lint": "yarn solhint 'contracts/*.sol'",
     "format": "yarn prettier --write",
     "coverage": "yarn hardhat coverage"

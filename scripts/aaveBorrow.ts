@@ -3,8 +3,18 @@ import { ethers, network, getNamedAccounts } from "hardhat";
 // import { getWeth } from "./getWeth";
 import { networkConfig } from "../helper-hardhat-config";
 
-const AMOUNT_DECIMAL = "0.01";
-const AMOUNT = ethers.utils.parseEther(AMOUNT_DECIMAL);
+// Amount of ETH to supply
+const SUPPLY_AMOUNT_DECIMAL = "0.01";
+const SUPPLY_AMOUNT = ethers.utils.parseEther(SUPPLY_AMOUNT_DECIMAL);
+
+// Percentage of supplied funds to borrow
+const BORROW_PERCENTAGE = 0.95;
+
+// 1: Stable - 2: Variable
+const INTEREST_RATE_MODE = 2;
+
+// Deprecated
+const REFERRAL_CODE = 0;
 
 const aaveBorrow = async () => {
   const chainId: number = network.config.chainId!;
@@ -12,26 +22,27 @@ const aaveBorrow = async () => {
 
   // Getting Wrraped Ether
   const wrappedEtherAddress = networkConfig[chainId]["wrappedEtherAddress"] || "";
-  await getWeth(wrappedEtherAddress, AMOUNT, deployer);
+  await getWeth(wrappedEtherAddress, SUPPLY_AMOUNT, deployer);
 
   // Getting the address of the Lending Pool
-  const poolProviderAddress = networkConfig[chainId]["poolProviderAddress"] || "";
-  const lendingPool = await getLendingPool(poolProviderAddress, deployer);
+  const aavePoolProviderAddress = networkConfig[chainId]["aavePoolProviderAddress"] || "";
+  const lendingPool = await getLendingPool(aavePoolProviderAddress, deployer);
 
   // Approving the Lending Pool to spend the WETH
-  await approveErc20(wrappedEtherAddress, lendingPool.address, AMOUNT, deployer);
+  await approveErc20(wrappedEtherAddress, lendingPool.address, SUPPLY_AMOUNT, deployer);
 
   // Depositing funds into the Lengin Pool
   console.log("...Depositing funds...");
-  await lendingPool.deposit(wrappedEtherAddress, AMOUNT, deployer, 0);
-  console.log(`==> ${AMOUNT} WETH deposited into Lending Pool`);
-  console.log(`==> ${AMOUNT} aWETH minted and transfered to ${deployer}`);
+  await lendingPool.deposit(wrappedEtherAddress, SUPPLY_AMOUNT, deployer, 0);
+  console.log(`==> ${SUPPLY_AMOUNT} WETH deposited into Lending Pool`);
+  console.log(`==> ${SUPPLY_AMOUNT} aWETH minted and transfered to ${deployer}`);
 
   // Calculating DAI amount available to borrow
   const daiEthPriceFeedAddress = networkConfig[chainId]["daiEthPriceFeedAddress"] || "";
   const daiAmountToBorrowInWei = await getAvailableDaiToBorrow(
     lendingPool,
     daiEthPriceFeedAddress,
+    BORROW_PERCENTAGE,
     deployer
   );
 
@@ -119,6 +130,7 @@ const approveErc20 = async (
 const getAvailableDaiToBorrow = async (
   lendingPool: Contract,
   daiEthPriceFeedAddress: string,
+  percentage: number,
   account: string
 ) => {
   // Getting the user account data across all the reserves
@@ -126,7 +138,7 @@ const getAvailableDaiToBorrow = async (
 
   const daiEthPrice = await getDaiPrice(daiEthPriceFeedAddress, account);
   const daiAmountToBorrow =
-    availableBorrowsETH.toString() * 0.95 * (1 / daiEthPrice.toString());
+    availableBorrowsETH.toString() * percentage * (1 / daiEthPrice.toString());
   const daiAmountToBorrowInWei = ethers.utils.parseEther(daiAmountToBorrow.toString());
 
   // 8250000000000000 <- 0.008250000000000000 ETH available
@@ -183,8 +195,8 @@ const borrow = async (
   const borrowTxn = await lendingPool.borrow(
     daiAddress,
     daiAmountToBorrow,
-    2,
-    0,
+    INTEREST_RATE_MODE,
+    REFERRAL_CODE,
     account
   );
   await borrowTxn.wait(1);
@@ -200,7 +212,12 @@ const repay = async (
 ) => {
   console.log("...Repaying funds...");
   await approveErc20(daiAddress, lendingPool.address, amount, account);
-  const repayTxn = await lendingPool.repay(daiAddress, amount, 2, account);
+  const repayTxn = await lendingPool.repay(
+    daiAddress,
+    amount,
+    INTEREST_RATE_MODE,
+    account
+  );
   await repayTxn.wait(1);
 
   console.log(`==> ${amount} DAI repayed by account ${account}`);
