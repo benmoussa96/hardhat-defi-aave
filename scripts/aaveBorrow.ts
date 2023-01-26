@@ -39,6 +39,10 @@ const aaveBorrow = async () => {
   const daiAddress = networkConfig[chainId]["daiAddress"] || "";
   await borrow(lendingPool, daiAddress, daiAmountToBorrowInWei, deployer);
   await getBorrowUsedData(lendingPool, deployer);
+
+  // Repaying the funds
+  await repay(lendingPool, daiAddress, daiAmountToBorrowInWei, deployer);
+  await getBorrowUsedData(lendingPool, deployer);
 };
 
 /**
@@ -186,6 +190,20 @@ const borrow = async (
   await borrowTxn.wait(1);
 
   console.log(`==> ${daiAmountToBorrow} DAI borrowed by account ${account}`);
+};
+
+const repay = async (
+  lendingPool: Contract,
+  daiAddress: string,
+  amount: BigNumber,
+  account: string
+) => {
+  console.log("...Repaying funds...");
+  await approveErc20(daiAddress, lendingPool.address, amount, account);
+  const repayTxn = await lendingPool.repay(daiAddress, amount, 2, account);
+  await repayTxn.wait(1);
+
+  console.log(`==> ${amount} DAI repayed by account ${account}`);
 };
 
 aaveBorrow()
