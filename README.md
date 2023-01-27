@@ -1,4 +1,4 @@
-# AAVE Protocol V2 - How to Supply, Borrow and Repay Funds Using Hardhat & Ethers.js
+# AAVE Protocol V2 - Supply, Borrow and Repay Funds Using Hardhat & Ethers.js
 
 ## Description
 
